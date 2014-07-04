@@ -17,12 +17,12 @@ describe Gitsh::InteractiveRunner do
       expect(history).to have_received(:save)
     end
 
-    it 'sets up readline' do
+    it 'sets up the line editor' do
       runner = build_interactive_runner
       runner.run
 
-      expect(readline).to have_received(:completion_append_character=)
-      expect(readline).to have_received(:completion_proc=)
+      expect(line_editor).to have_received(:completion_append_character=)
+      expect(line_editor).to have_received(:completion_proc=)
     end
 
     it 'loads the ~/.gitshrc file' do
@@ -37,7 +37,7 @@ describe Gitsh::InteractiveRunner do
     it 'handles a SIGINT' do
       runner = build_interactive_runner
 
-      readline.stubs(:readline).
+      line_editor.stubs(:readline).
         returns('a').
         then.raises(Interrupt).
         then.returns('b').
@@ -54,19 +54,19 @@ describe Gitsh::InteractiveRunner do
     end
 
     it 'handles a SIGWINCH' do
-      readline = SignallingReadline.new('WINCH')
-      readline.stubs(:set_screen_size)
-      runner = build_interactive_runner(readline: readline)
+      line_editor = SignallingLineEditor.new('WINCH')
+      line_editor.stubs(:set_screen_size)
+      runner = build_interactive_runner(line_editor: line_editor)
 
       expect { runner.run }.not_to raise_exception
-      expect(readline).to have_received(:set_screen_size).with(24, 80)
+      expect(line_editor).to have_received(:set_screen_size).with(24, 80)
     end
   end
 
   def build_interactive_runner(options={})
     Gitsh::InteractiveRunner.new(
       interpreter: interpreter,
-      readline: options.fetch(:readline, readline),
+      line_editor: options.fetch(:line_editor, line_editor),
       history: history,
       env: env,
       term_info: term_info,
@@ -86,8 +86,8 @@ describe Gitsh::InteractiveRunner do
     @history ||= stub('history', load: nil, save: nil)
   end
 
-  def readline
-    @readline ||= stub('readline', {
+  def line_editor
+    @line_editor ||= stub('LineEditor', {
       :'completion_append_character=' => nil,
       :'completion_proc=' => nil,
       readline: nil
