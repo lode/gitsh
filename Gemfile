@@ -8,4 +8,5 @@ group :test do
   gem 'rspec'
   gem 'bourne'
   gem 'pry'
+  gem 'pry-byebug'
 end
