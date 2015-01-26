@@ -46,7 +46,7 @@ module Gitsh
 
     def handle_window_resize
       Signal.trap('WINCH') do
-        readline.set_screen_size(term_info.lines, term_info.cols)
+        line_editor.set_screen_size(term_info.lines, term_info.cols)
       end
     end
 
