@@ -1,41 +1,29 @@
-module Gitsh::Commands
-  class ShellCommand
-    def initialize(env, command, args)
-      @env = env
-      @command = command
-      @args = args
-    end
+require 'gitsh/shell_command_runner'
 
-    def execute
-      pid = Process.spawn(
-        *command_with_arguments,
-        out: env.output_stream.to_i,
-        err: env.error_stream.to_i
-      )
-      wait_for_process(pid)
-      $? && $?.success?
-    rescue SystemCallError => e
-      env.puts_error e.message
-      false
-    end
+module Gitsh
+  module Commands
+    class ShellCommand
+      def initialize(env, command, args)
+        @env = env
+        @command = command
+        @args = args
+      end
 
-    private
+      def execute
+        ShellCommandRunner.new(command_with_arguments, env).run
+      end
 
-    attr_reader :env, :command, :args
+      private
 
-    def command_with_arguments
-      [command, arg_values].flatten
-    end
+      attr_reader :env, :command, :args
 
-    def arg_values
-      args.values(env)
-    end
+      def command_with_arguments
+        [command, arg_values].flatten
+      end
 
-    def wait_for_process(pid)
-      Process.wait(pid)
-    rescue Interrupt
-      Process.kill('INT', pid)
-      retry
+      def arg_values
+        args.values(env)
+      end
     end
   end
 end
